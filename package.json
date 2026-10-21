@@ -1,0 +1,19 @@
+{
+  "name": "@zontak/railing",
+  "version": "0.1.0",
+  "description": "Guardrails for AI-written code: one gate command, rules that fail the build, a ratchet that only tightens, and Claude Code hooks that stop the assistant from finishing until the rules pass.",
+  "type": "module",
+  "license": "MIT",
+  "bin": { "railing": "bin/railing.mjs" },
+  "files": ["bin", "src", "README.md", "LICENSE"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "check": "node bin/railing.mjs check",
+    "gate": "node bin/railing.mjs gate"
+  },
+  "keywords": ["claude-code", "ai", "guardrails", "lint", "ci", "quality", "coding-agents", "vibe-coding"],
+  "repository": { "type": "git", "url": "git+https://github.com/Zontak-LLC/railing.git" },
+  "homepage": "https://github.com/Zontak-LLC/railing#readme",
+  "bugs": { "url": "https://github.com/Zontak-LLC/railing/issues" }
+}

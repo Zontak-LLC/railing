@@ -1,0 +1,7 @@
+{
+  "include": ["bin", "src", "test"],
+  "exclude": ["^src/rules\\.mjs$", "^test/"],
+  "rules": { "max-lines": 300 },
+  "ratchet": { "base": "origin/main" },
+  "steps": [{ "name": "test", "run": "npm test" }]
+}
