@@ -16,7 +16,6 @@ test("a project with no src folder: init picks the code folders, and the gate pa
   assert.deepEqual(includeOf(dir), ["server"]);
   assert.match(init.out, /include: \["server"\]/);
   assert.match(init.out, /Change "include" in railing\.config\.json/);
-  commit(dir);
   const gate = railing(dir, ["gate"]);
   assert.equal(gate.code, 0, gate.err + gate.out);
   assert.match(gate.out, /rules ok \(1 files\)/);
@@ -28,7 +27,6 @@ test("a project with no folders at all: init writes an explicit default, says so
   const init = railing(dir, ["init"]);
   assert.deepEqual(includeOf(dir), ["."]);
   assert.match(init.out, /no source folders found/);
-  commit(dir);
   const gate = railing(dir, ["gate"]);
   assert.equal(gate.code, 0, gate.err + gate.out);
   assert.match(gate.out, /rules ok \(1 files\)/);
@@ -39,7 +37,6 @@ test("a project with src: init picks src (and the other usual folders that exist
   commit(dir);
   railing(dir, ["init"]);
   assert.deepEqual(includeOf(dir), ["src", "test"]);
-  commit(dir);
   assert.equal(railing(dir, ["gate"]).code, 0);
   put(dir, { "src/bad.ts": 'eval("1");\n' });
   const gate = railing(dir, ["gate"]);
