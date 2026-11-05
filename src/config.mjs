@@ -69,3 +69,24 @@ export function loadConfig(cwd) {
   }
   return config;
 }
+
+/** Folders the gate never scans, whatever "include" says. Build folders named "build" and "out" count only at the top level. */
+const ALWAYS_IGNORED_ANYWHERE = new Set(["node_modules", ".git", "dist", ".next", "coverage", ".railing", ".githooks"]);
+const ALWAYS_IGNORED_TOP_LEVEL = new Set(["build", "out"]);
+
+/** True for a project-relative path (with / separators) inside a folder the gate always skips, or Railing's own config file. */
+export function isAlwaysIgnored(file) {
+  if (file === CONFIG_FILE) return true;
+  const parts = file.split("/");
+  const dirs = parts.slice(0, -1);
+  return dirs.some((d, i) => ALWAYS_IGNORED_ANYWHERE.has(d) || (i === 0 && ALWAYS_IGNORED_TOP_LEVEL.has(d)));
+}
+
+/** Does `file` sit under one of the "include" folders? An empty list or "." means the whole project (minus the always-ignored folders). */
+export function isIncluded(file, include) {
+  if (include.length === 0) return true;
+  return include.some((d) => {
+    const dir = d.replace(/\/$/, "");
+    return dir === "." || dir === "" || file === dir || file.startsWith(`${dir}/`);
+  });
+}
