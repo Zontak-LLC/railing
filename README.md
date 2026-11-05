@@ -44,6 +44,8 @@ npx railing gate
 }
 ```
 
+`include` lists the folders the rules check. `railing init` fills it in for you: the usual source folders that exist (`src`, `lib`, `app`, `packages`, `scripts`, `test`, `tests`, `e2e`, `bin`), else the top-level folders that hold code, else `["."]` (the whole project). It prints what it chose. To change it, edit `include` in `railing.config.json`. If `include` is missing, the gate uses the usual folders above; if it is empty or `["."]`, it checks the whole project. In every case the gate skips `node_modules`, `.git`, `dist`, `.next`, `coverage`, a top-level `build` or `out`, and Railing's own files (`railing.config.json`, `.railing/`, `.githooks/`).
+
 ## In CI
 
 Fetch full history so the ratchet can see the base branch, and use `--strict` so a missing base fails instead of being skipped:

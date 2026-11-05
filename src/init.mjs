@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { CONFIG_FILE } from "./config.mjs";
+import { CONFIG_FILE, DEFAULTS, isAlwaysIgnored } from "./config.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const START = "<!-- railing:start -->";
@@ -101,14 +101,46 @@ function gitHooks(cwd, log) {
   }
 }
 
+const COMMON_DIRS = ["src", "lib", "app", "packages", "scripts", "test", "tests", "e2e", "bin"];
+
+/** Top-level folders that hold code files git knows about (tracked or new, not ignored). */
+function codeFolders(cwd) {
+  let out = "";
+  try {
+    out = execFileSync("git", ["-c", "core.quotePath=false", "ls-files", "-z", "--cached", "--others", "--exclude-standard"], { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  } catch {
+    // not a git repository: the folder check below still runs
+  }
+  const exts = new Set(DEFAULTS.extensions);
+  const found = new Set();
+  for (const f of out.split("\0").filter(Boolean)) {
+    if (!f.includes("/") || isAlwaysIgnored(f) || f.startsWith(".") || !exts.has(f.split(".").pop() ?? "")) continue;
+    found.add(f.split("/")[0]);
+  }
+  return [...found].sort();
+}
+
+/** Picks the "include" list: the usual source folders that exist, else the top-level folders with code, else the whole project. Says why. */
+export function detectInclude(cwd) {
+  const common = COMMON_DIRS.filter((d) => existsSync(join(cwd, d)));
+  if (common.length) return { include: common, why: `the usual source folders that exist: ${common.join(", ")}` };
+  const code = codeFolders(cwd);
+  if (code.length) return { include: code, why: `the top-level folders that hold code: ${code.join(", ")}` };
+  return { include: ["."], why: "no source folders found, so the whole project (node_modules, .git and build output are always skipped)" };
+}
+
 /** The whole setup. Safe to run again: it only adds what is missing and refreshes the marked CLAUDE.md section. */
 export function init(cwd, { log = console.log } = {}) {
+  const { include, why } = detectInclude(cwd);
   const config = {
-    include: ["src", "app", "lib", "scripts", "test", "tests", "e2e"].filter((d) => existsSync(join(cwd, d))),
+    include,
     rules: { "no-ts-ignore": true, "no-double-cast": true, "todo-needs-issue": true, "no-eval": true, "no-focused-tests": true, "max-lines": 300 },
     steps: detectSteps(cwd),
   };
-  writeIfAbsent(join(cwd, CONFIG_FILE), `${JSON.stringify(config, null, 2)}\n`, log);
+  const configPath = join(cwd, CONFIG_FILE);
+  const hadConfig = existsSync(configPath);
+  writeIfAbsent(configPath, `${JSON.stringify(config, null, 2)}\n`, log);
+  if (!hadConfig) log(`       include: ${JSON.stringify(include)}, chosen from ${why}. Change "include" in ${CONFIG_FILE} to check other folders.`);
   writeIfAbsent(join(cwd, ".railing", "floors.json"), `${JSON.stringify({ floors: {}, ceilings: {} }, null, 2)}\n`, log);
   mergeClaudeSettings(cwd, log);
   claudeMdSection(cwd, log);

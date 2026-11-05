@@ -2,6 +2,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { isAlwaysIgnored, isIncluded } from "./config.mjs";
+
 /**
  * Rules a linter cannot express, found with plain text search. Each built-in has an id that the config switches on
  * (true), off (false) or, for `max-lines`, sets to a number. The patterns are written so this file does not trip them.
@@ -51,7 +53,8 @@ export function listFiles(cwd, config) {
     .filter(Boolean)
     .filter((f) => existsSync(join(cwd, f))) // listed by git but deleted from disk
     .filter((f) => exts.has(f.split(".").pop() ?? ""))
-    .filter((f) => config.include.length === 0 || config.include.some((d) => f === d || f.startsWith(`${d.replace(/\/$/, "")}/`)))
+    .filter((f) => !isAlwaysIgnored(f))
+    .filter((f) => isIncluded(f, config.include))
     .filter((f) => !excludes.some((re) => re.test(f)));
 }
 
