@@ -9,7 +9,7 @@ It came out of [UseHourly](https://github.com/Zontak-LLC/usehourly), a time trac
 ## Try it
 
 ```sh
-npm i -D @zontak/railing
+npm i -D github:Zontak-LLC/railing
 npx railing init
 npx railing gate
 ```
@@ -63,6 +63,10 @@ Fetch full history so the ratchet can see the base branch, and use `--strict` so
 - It checks text, not meaning. A regular expression can be fooled, and a rule is only as good as its pattern.
 - It does not run your tests for you, it runs the command you give it.
 - Only built-in rules and your own patterns for now. Structural checks (for example "browser code never imports server code") are not included yet.
+
+## The whole factory
+
+Railing is one piece of the setup we use to build with Claude Code every day. If you want the rest (the ticket-to-pull-request loop, the CLAUDE.md and working-agreement templates, hooks, helper agents and a first-hour guide), it is sold as a starter kit: [Anvil](https://zontak.ai/anvil). Railing stays free and MIT either way.
 
 ## Licence
 
